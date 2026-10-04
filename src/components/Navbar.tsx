@@ -8,6 +8,7 @@ interface NavbarProps {
   health: SystemHealth | null;
   onOpenSecurityModal: () => void;
   onOpenPitchModal: () => void;
+  onOpenDataModal: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -16,6 +17,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   health,
   onOpenSecurityModal,
   onOpenPitchModal,
+  onOpenDataModal,
 }) => {
   const isKeyConfigured = health?.openRouter.isConfigured;
   const errorCount = health?.logs.errors || 0;
@@ -142,6 +144,19 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="font-mono text-[11px]">Fallback Mode</span>
               </>
             )}
+          </button>
+
+          <button
+            onClick={onOpenDataModal}
+            className="px-2.5 py-1.5 text-xs font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded transition-colors whitespace-nowrap inline-flex items-center gap-1.5 shadow-sm"
+            title="Inspect Data Sources, Upload Files, or Download inputs.zip (47.4 KB)"
+          >
+            <Database className="w-3.5 h-3.5 text-amber-400" />
+            <span className="hidden lg:inline">Where is the data?</span>
+            <span className="lg:hidden">Data</span>
+            <span className="px-1.5 py-0.2 bg-amber-400/20 text-amber-300 text-[10px] font-mono rounded border border-amber-400/30">
+              47.4 KB
+            </span>
           </button>
 
           <button

@@ -13,12 +13,99 @@ import {
   TrendingDown,
   DollarSign,
   Info,
+  LineChart as LineChartIcon,
+  Layers,
 } from 'lucide-react';
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ReferenceLine,
+} from 'recharts';
 
 interface WeeklyFitBriefViewProps {
   initialBrief: WeeklyFitBrief | null;
   recentResults: SingleAnalysisResult[];
 }
+
+const FOUR_WEEK_TREND_DATA = [
+  {
+    week: 'W36',
+    weekLabel: 'W36 (Sep 01 - 07)',
+    overallReturnRate: 33.2,
+    unclassifiedOtherRate: 45.1,
+    jaipurHubReturnRate: 39.8,
+    tiruppurHubReturnRate: 21.4,
+    sizingDefectsPct: 41.2,
+    annotation: 'Pre-Radar Baseline (~300 manual reviews/wk)',
+  },
+  {
+    week: 'W37',
+    weekLabel: 'W37 (Sep 08 - 14)',
+    overallReturnRate: 32.6,
+    unclassifiedOtherRate: 43.8,
+    jaipurHubReturnRate: 39.1,
+    tiruppurHubReturnRate: 20.8,
+    sizingDefectsPct: 40.5,
+    annotation: 'Audit detected -1.5" bust under-spec on Chanderi',
+  },
+  {
+    week: 'W38',
+    weekLabel: 'W38 (Sep 15 - 21)',
+    overallReturnRate: 31.8,
+    unclassifiedOtherRate: 28.5,
+    jaipurHubReturnRate: 37.2,
+    tiruppurHubReturnRate: 19.9,
+    sizingDefectsPct: 35.0,
+    annotation: 'Prompt chaining pilot launched & vendor alerted',
+  },
+  {
+    week: 'W39',
+    weekLabel: 'W39 (Sep 22 - 28 Current)',
+    overallReturnRate: 30.7,
+    unclassifiedOtherRate: 12.3,
+    jaipurHubReturnRate: 34.6,
+    tiruppurHubReturnRate: 18.2,
+    sizingDefectsPct: 29.4,
+    annotation: 'Weekly Fit Brief applied; 2.5% return reduction',
+  },
+];
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    const dataItem = FOUR_WEEK_TREND_DATA.find((d) => d.week === label || d.weekLabel === label);
+    return (
+      <div className="bg-slate-900 border border-slate-700 p-3.5 rounded-xl shadow-2xl text-xs space-y-2 font-mono">
+        <div className="font-bold text-white border-b border-slate-800 pb-1.5 font-sans flex items-center justify-between gap-3">
+          <span>{dataItem?.weekLabel || label}</span>
+          <span className="text-[10px] text-amber-400 font-mono">Dhaga &amp; Co. Metabase</span>
+        </div>
+        <div className="space-y-1">
+          {payload.map((entry: any, index: number) => (
+            <div key={`item-${index}`} className="flex items-center justify-between gap-4">
+              <span className="flex items-center gap-1.5 font-sans" style={{ color: entry.color }}>
+                <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: entry.color }} />
+                {entry.name}:
+              </span>
+              <span className="font-bold text-white">{entry.value}%</span>
+            </div>
+          ))}
+        </div>
+        {dataItem?.annotation && (
+          <div className="pt-1.5 border-t border-slate-800/80 text-[10px] text-slate-400 font-sans italic">
+            Note: {dataItem.annotation}
+          </div>
+        )}
+      </div>
+    );
+  }
+  return null;
+};
 
 export const WeeklyFitBriefView: React.FC<WeeklyFitBriefViewProps> = ({
   initialBrief,
@@ -27,6 +114,7 @@ export const WeeklyFitBriefView: React.FC<WeeklyFitBriefViewProps> = ({
   const [brief, setBrief] = useState<WeeklyFitBrief | null>(initialBrief);
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [chartView, setChartView] = useState<'all' | 'unclassified' | 'hubs'>('all');
 
   const handleGenerate = async () => {
     setGenerating(true);
@@ -183,6 +271,187 @@ ${brief.listingCopyFixes.map((l) => `- **${l.sku}**: Add to listing: "${l.sugges
             <p className="text-xs text-slate-200 leading-relaxed bg-slate-950 p-4 rounded-lg border border-slate-850">
               {brief.executiveSummary}
             </p>
+          </div>
+
+          {/* 4-Week Return Rate & Defect Velocity Recharts Line Chart */}
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <LineChartIcon className="w-4 h-4 text-amber-400" />
+                  <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                    4-Week Return Rate &amp; Defect Velocity (W36 - W39)
+                  </h3>
+                </div>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Visualizing return rate compression following automated Hinglish normalization and Jaipur pattern master adjustments
+                </p>
+              </div>
+
+              {/* View Filter Toggles */}
+              <div className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs font-semibold shrink-0">
+                <button
+                  onClick={() => setChartView('all')}
+                  className={`px-2.5 py-1 rounded transition-colors ${
+                    chartView === 'all'
+                      ? 'bg-amber-400 text-slate-950 shadow-sm'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  All Metrics
+                </button>
+                <button
+                  onClick={() => setChartView('unclassified')}
+                  className={`px-2.5 py-1 rounded transition-colors ${
+                    chartView === 'unclassified'
+                      ? 'bg-amber-400 text-slate-950 shadow-sm'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Unclassified 'Other' Drop
+                </button>
+                <button
+                  onClick={() => setChartView('hubs')}
+                  className={`px-2.5 py-1 rounded transition-colors ${
+                    chartView === 'hubs'
+                      ? 'bg-amber-400 text-slate-950 shadow-sm'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Jaipur vs Tiruppur
+                </button>
+              </div>
+            </div>
+
+            {/* Quick KPI Strip */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+              <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                <span className="text-slate-500 text-[10px] block uppercase font-semibold">Current Return Rate</span>
+                <div className="flex items-baseline gap-2 mt-0.5">
+                  <span className="text-base font-bold text-amber-400 font-mono">30.7%</span>
+                  <span className="text-[10px] text-emerald-400 font-semibold font-mono">(-2.5% pts)</span>
+                </div>
+                <span className="text-[10px] text-slate-400 block mt-0.5">Down from 33.2% in W36</span>
+              </div>
+
+              <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                <span className="text-slate-500 text-[10px] block uppercase font-semibold">Unclassified 'Other'</span>
+                <div className="flex items-baseline gap-2 mt-0.5">
+                  <span className="text-base font-bold text-rose-400 font-mono">12.3%</span>
+                  <span className="text-[10px] text-emerald-400 font-semibold font-mono">(-32.8% pts)</span>
+                </div>
+                <span className="text-[10px] text-slate-400 block mt-0.5">Triaged by prompt chain</span>
+              </div>
+
+              <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                <span className="text-slate-500 text-[10px] block uppercase font-semibold">Jaipur Kurti Returns</span>
+                <div className="flex items-baseline gap-2 mt-0.5">
+                  <span className="text-base font-bold text-cyan-400 font-mono">34.6%</span>
+                  <span className="text-[10px] text-emerald-400 font-semibold font-mono">(-5.2% pts)</span>
+                </div>
+                <span className="text-[10px] text-slate-400 block mt-0.5">Bust grading spec applied</span>
+              </div>
+
+              <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                <span className="text-slate-500 text-[10px] block uppercase font-semibold">Tiruppur Knit Returns</span>
+                <div className="flex items-baseline gap-2 mt-0.5">
+                  <span className="text-base font-bold text-emerald-400 font-mono">18.2%</span>
+                  <span className="text-[10px] text-emerald-400 font-semibold font-mono">(-3.2% pts)</span>
+                </div>
+                <span className="text-[10px] text-slate-400 block mt-0.5">5% spandex collar mandate</span>
+              </div>
+            </div>
+
+            {/* Recharts Container */}
+            <div className="h-72 w-full pt-2">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={FOUR_WEEK_TREND_DATA} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.6} />
+                  <XAxis
+                    dataKey="week"
+                    stroke="#94a3b8"
+                    fontSize={11}
+                    tickLine={false}
+                    tick={{ fill: '#94a3b8' }}
+                  />
+                  <YAxis
+                    stroke="#94a3b8"
+                    fontSize={11}
+                    unit="%"
+                    domain={[10, 50]}
+                    tickLine={false}
+                    tick={{ fill: '#94a3b8' }}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend
+                    wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }}
+                    iconType="circle"
+                  />
+
+                  {(chartView === 'all' || chartView === 'unclassified') && (
+                    <Line
+                      type="monotone"
+                      name="Overall Return Rate %"
+                      dataKey="overallReturnRate"
+                      stroke="#f59e0b"
+                      strokeWidth={3}
+                      dot={{ r: 4, fill: '#f59e0b' }}
+                      activeDot={{ r: 6 }}
+                    />
+                  )}
+
+                  {(chartView === 'all' || chartView === 'unclassified') && (
+                    <Line
+                      type="monotone"
+                      name="Unclassified 'Other' Returns %"
+                      dataKey="unclassifiedOtherRate"
+                      stroke="#f43f5e"
+                      strokeWidth={2.5}
+                      strokeDasharray="4 4"
+                      dot={{ r: 4, fill: '#f43f5e' }}
+                      activeDot={{ r: 6 }}
+                    />
+                  )}
+
+                  {(chartView === 'all' || chartView === 'hubs') && (
+                    <Line
+                      type="monotone"
+                      name="Jaipur Hub Returns %"
+                      dataKey="jaipurHubReturnRate"
+                      stroke="#06b6d4"
+                      strokeWidth={2}
+                      dot={{ r: 3, fill: '#06b6d4' }}
+                      activeDot={{ r: 5 }}
+                    />
+                  )}
+
+                  {(chartView === 'all' || chartView === 'hubs') && (
+                    <Line
+                      type="monotone"
+                      name="Tiruppur Hub Returns %"
+                      dataKey="tiruppurHubReturnRate"
+                      stroke="#10b981"
+                      strokeWidth={2}
+                      dot={{ r: 3, fill: '#10b981' }}
+                      activeDot={{ r: 5 }}
+                    />
+                  )}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Insight Badge Footer */}
+            <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 flex items-center justify-between text-xs text-slate-300">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                <span className="text-[11px] text-slate-300">
+                  <strong>Key Velocity Takeaway:</strong> Unclassified "Other" returns collapsed from <strong>45.1%</strong> down to <strong>12.3%</strong> in W39 due to 3-stage vernacular prompt chaining.
+                </span>
+              </div>
+              <span className="text-[11px] text-amber-400 font-mono font-semibold hidden sm:inline">
+                Target: &lt;10% by W41
+              </span>
+            </div>
           </div>
 
           {/* High-Risk SKUs Table */}

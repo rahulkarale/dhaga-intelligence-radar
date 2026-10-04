@@ -36,6 +36,18 @@ const app = express();
 const logger = new Logger('Server');
 
 app.use(express.json({ limit: '10mb' }));
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Explicit download routes for data files
+app.get('/inputs.zip', (req, res) => {
+  const filePath = path.join(__dirname, 'public', 'inputs.zip');
+  res.download(filePath, 'inputs.zip');
+});
+
+app.get('/dhaga_returns_template.csv', (req, res) => {
+  const filePath = path.join(__dirname, 'public', 'dhaga_returns_template.csv');
+  res.download(filePath, 'dhaga_returns_template.csv');
+});
 
 // Helper to extract optional session override key safely from headers
 function getSessionKey(req: express.Request): string | undefined {

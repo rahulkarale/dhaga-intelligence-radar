@@ -12,18 +12,24 @@ import {
   Clock,
   Zap,
   Download,
+  Database,
+  FileArchive,
+  FileSpreadsheet,
+  Upload,
 } from 'lucide-react';
 
 interface BatchPipelineViewProps {
   vendors: Vendor[];
   sampleReturns: ReturnRecord[];
   onBatchCompleted: (results: SingleAnalysisResult[]) => void;
+  onOpenDataModal?: () => void;
 }
 
 export const BatchPipelineView: React.FC<BatchPipelineViewProps> = ({
   vendors,
   sampleReturns,
   onBatchCompleted,
+  onOpenDataModal,
 }) => {
   const [running, setRunning] = useState(false);
   const [batchData, setBatchData] = useState<{
@@ -183,6 +189,64 @@ export const BatchPipelineView: React.FC<BatchPipelineViewProps> = ({
               )}
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* Where is the data? Ingestion Card */}
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-lg bg-amber-400/10 text-amber-400 border border-amber-400/20 shrink-0">
+            <Database className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold text-white tracking-tight">Where is the data?</span>
+              <span className="px-2 py-0.5 rounded bg-emerald-950/80 border border-emerald-800 text-emerald-400 font-mono text-[10px] font-semibold">
+                ● Connected database (14k SKUs)
+              </span>
+            </div>
+            <div className="flex items-center gap-3 mt-1 text-xs text-slate-400">
+              <span className="flex items-center gap-1">
+                <FileArchive className="w-3.5 h-3.5 text-amber-400" />
+                Return and review data (.zip): <strong className="font-mono text-white">inputs .zip</strong> (47.4 KB)
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0 flex-wrap">
+          {/* Download inputs.zip button */}
+          <a
+            href="/inputs.zip"
+            download="inputs.zip"
+            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
+            title="Download inputs.zip archive (47.4 KB)"
+          >
+            <Download className="w-3.5 h-3.5 text-amber-400" />
+            <span>inputs .zip 47.4 KB ⇣</span>
+          </a>
+
+          {/* Download CSV template */}
+          <a
+            href="/dhaga_returns_template.csv"
+            download="dhaga_returns_template.csv"
+            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
+            title="Download CSV Template"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
+            <span>CSV template</span>
+          </a>
+
+          {/* Load data button */}
+          {onOpenDataModal && (
+            <button
+              onClick={onOpenDataModal}
+              className="px-3 py-1.5 bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 border border-amber-400/30 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
+            >
+              <Upload className="w-3.5 h-3.5" />
+              <span>Upload data / Load data</span>
+            </button>
+          )}
         </div>
       </div>
 

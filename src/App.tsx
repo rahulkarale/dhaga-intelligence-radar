@@ -9,6 +9,7 @@ import { fetchHealth, fetchDatasets, fetchMetrics } from './api';
 import { Navbar } from './components/Navbar';
 import { SecurityKeyModal } from './components/SecurityKeyModal';
 import { PitchGuideModal } from './components/PitchGuideModal';
+import { WhereIsTheDataModal } from './components/WhereIsTheDataModal';
 import { LiveRadarView } from './components/LiveRadarView';
 import { BatchPipelineView } from './components/BatchPipelineView';
 import { WeeklyFitBriefView } from './components/WeeklyFitBriefView';
@@ -40,6 +41,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [securityModalOpen, setSecurityModalOpen] = useState(false);
   const [pitchModalOpen, setPitchModalOpen] = useState(false);
+  const [dataModalOpen, setDataModalOpen] = useState(false);
   const [recentResults, setRecentResults] = useState<SingleAnalysisResult[]>([]);
   const [initialBrief, setInitialBrief] = useState<WeeklyFitBrief | null>(null);
 
@@ -90,6 +92,7 @@ export default function App() {
         health={health}
         onOpenSecurityModal={() => setSecurityModalOpen(true)}
         onOpenPitchModal={() => setPitchModalOpen(true)}
+        onOpenDataModal={() => setDataModalOpen(true)}
       />
 
       {/* Main Content Viewport */}
@@ -115,6 +118,7 @@ export default function App() {
                 vendors={datasets?.vendors || []}
                 sampleReturns={datasets?.sampleReturns || []}
                 onBatchCompleted={handleBatchCompleted}
+                onOpenDataModal={() => setDataModalOpen(true)}
               />
             )}
 
@@ -192,6 +196,21 @@ export default function App() {
         isOpen={pitchModalOpen}
         onClose={() => setPitchModalOpen(false)}
         onSelectTab={(tab) => setActiveTab(tab)}
+      />
+
+      {/* Ingestion & Data Source Modal */}
+      <WhereIsTheDataModal
+        isOpen={dataModalOpen}
+        onClose={() => setDataModalOpen(false)}
+        onLoadSampleData={loadInitialData}
+        onCustomDataUploaded={(uploaded) => {
+          if (datasets) {
+            setDatasets({
+              ...datasets,
+              sampleReturns: [...uploaded, ...datasets.sampleReturns],
+            });
+          }
+        }}
       />
     </div>
   );
