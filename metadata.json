@@ -1,0 +1,6 @@
+{
+  "name": "Dhaga & Co. Intelligence Radar",
+  "description": "AI-powered return & customer feedback intelligence radar for Dhaga & Co. Automates Hinglish return reason classification, vendor defect attribution, and weekly fit briefs.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
