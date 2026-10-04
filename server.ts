@@ -182,6 +182,74 @@ app.post('/api/radar/analyze-batch', async (req, res) => {
   }
 });
 
+// Export processed return intelligence to CSV
+app.post('/api/radar/export-csv', async (req, res) => {
+  const sessionKey = getSessionKey(req);
+  const records: ReturnRecord[] = req.body.records || DHAGA_SAMPLE_RETURNS;
+
+  try {
+    const batch = await analyzeBatchReturns(records, sessionKey);
+    const results = batch.results;
+
+    const headers = [
+      'Return ID',
+      'SKU',
+      'Vendor ID',
+      'Vendor Name',
+      'Original Customer Feedback',
+      'Translated English Feedback',
+      'Normalized Color',
+      'Garment Zone',
+      'Root Cause Classification',
+      'Confidence Score',
+      'Defect Severity (1-10)',
+      'Department Routing',
+      'Actionable Recommendation',
+      'Pattern Master Spec Correction',
+      'Pipeline Mode',
+      'Latency (ms)',
+      'Total Tokens',
+      'Inference Cost (USD)',
+    ];
+
+    const escapeCsv = (val: unknown) => {
+      if (val === null || val === undefined) return '""';
+      const str = String(val).replace(/"/g, '""');
+      return `"${str}"`;
+    };
+
+    const rows = results.map((r) => [
+      escapeCsv(r.returnId),
+      escapeCsv(r.sku),
+      escapeCsv(r.vendorId),
+      escapeCsv(r.vendorName),
+      escapeCsv(r.rawText),
+      escapeCsv(r.translatedEnglish || r.normalizedText),
+      escapeCsv(r.normalizedColor),
+      escapeCsv(r.garmentZone),
+      escapeCsv(r.rootCause),
+      escapeCsv(r.confidenceScore),
+      escapeCsv(r.severityScore),
+      escapeCsv(r.routingTarget),
+      escapeCsv(r.actionableRecommendation),
+      escapeCsv(r.specCorrectionNote),
+      escapeCsv(r.mode),
+      escapeCsv(r.timingMs),
+      escapeCsv(r.tokens?.total || 0),
+      escapeCsv(r.costUsd ? r.costUsd.toFixed(6) : '0.000000'),
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map((row) => row.join(','))].join('\r\n');
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="dhaga_return_intelligence_${new Date().toISOString().slice(0, 10)}.csv"`);
+    res.send(csvContent);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.error(`CSV export error: ${msg}`);
+    res.status(500).json({ error: msg });
+  }
+});
+
 // Evaluator-Optimizer Weekly Fit Brief synthesis
 app.post('/api/radar/generate-fit-brief', async (req, res) => {
   const sessionKey = getSessionKey(req);

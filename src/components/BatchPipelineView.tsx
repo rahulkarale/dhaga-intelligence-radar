@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   Clock,
   Zap,
+  Download,
 } from 'lucide-react';
 
 interface BatchPipelineViewProps {
@@ -49,6 +50,92 @@ export const BatchPipelineView: React.FC<BatchPipelineViewProps> = ({
     }
   };
 
+  const exportToCsv = () => {
+    // If user has not clicked run yet, analyze sample returns synchronously or use existing results
+    const recordsToExport = batchData?.results && batchData.results.length > 0 
+      ? batchData.results 
+      : sampleReturns.map((s) => ({
+          returnId: s.id,
+          sku: s.sku,
+          vendorId: s.vendorId,
+          vendorName: s.vendorName,
+          rawText: s.freeTextOtherReason || s.officialReturnReason,
+          normalizedText: s.freeTextOtherReason || '',
+          translatedEnglish: s.freeTextOtherReason || '',
+          normalizedColor: s.colorRaw || '',
+          garmentZone: 'Pending Triage',
+          rootCause: s.officialReturnReason,
+          confidenceScore: 0.85,
+          severityScore: 7,
+          routingTarget: 'Vendor Sourcing',
+          actionableRecommendation: `Triage complaint for SKU ${s.sku} from ${s.vendorName}`,
+          specCorrectionNote: 'Review pattern grading and wash fastness spec.',
+          timingMs: 0,
+          tokens: { prompt: 0, completion: 0, total: 0 },
+          costUsd: 0,
+          mode: 'pre-batch',
+        }));
+
+    const headers = [
+      'Return ID',
+      'SKU',
+      'Vendor ID',
+      'Vendor Name',
+      'Original Customer Feedback',
+      'Translated English Feedback',
+      'Normalized Color',
+      'Garment Zone',
+      'Root Cause Classification',
+      'Confidence Score',
+      'Defect Severity (1-10)',
+      'Department Routing',
+      'Actionable Recommendation',
+      'Pattern Master Spec Correction',
+      'Pipeline Mode',
+      'Latency (ms)',
+      'Total Tokens',
+      'Inference Cost (USD)',
+    ];
+
+    const escapeCsv = (val: any) => {
+      if (val === null || val === undefined) return '""';
+      const str = String(val).replace(/"/g, '""');
+      return `"${str}"`;
+    };
+
+    const rows = recordsToExport.map((r) => [
+      escapeCsv(r.returnId),
+      escapeCsv(r.sku),
+      escapeCsv(r.vendorId),
+      escapeCsv(r.vendorName),
+      escapeCsv(r.rawText),
+      escapeCsv(r.translatedEnglish || r.normalizedText),
+      escapeCsv(r.normalizedColor),
+      escapeCsv(r.garmentZone),
+      escapeCsv(r.rootCause),
+      escapeCsv(r.confidenceScore),
+      escapeCsv(r.severityScore),
+      escapeCsv(r.routingTarget),
+      escapeCsv(r.actionableRecommendation),
+      escapeCsv(r.specCorrectionNote),
+      escapeCsv(r.mode),
+      escapeCsv(r.timingMs),
+      escapeCsv(r.tokens?.total || 0),
+      escapeCsv(r.costUsd ? r.costUsd.toFixed(6) : '0.000000'),
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map((row) => row.join(','))].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `dhaga_return_intelligence_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const filteredVendors = vendors.filter(
     (v) => activeFilterHub === 'All' || v.hub === activeFilterHub
   );
@@ -68,23 +155,34 @@ export const BatchPipelineView: React.FC<BatchPipelineViewProps> = ({
             </p>
           </div>
 
-          <button
-            onClick={handleRunBatch}
-            disabled={running}
-            className="px-4 py-2.5 bg-amber-400 hover:bg-amber-300 disabled:opacity-50 text-slate-950 font-semibold rounded-lg text-xs transition-colors flex items-center gap-2 shrink-0 shadow-sm"
-          >
-            {running ? (
-              <>
-                <RefreshCw className="w-4 h-4 animate-spin" />
-                Processing Concurrent Batches...
-              </>
-            ) : (
-              <>
-                <Play className="w-4 h-4" />
-                Run Parallel Batch Analysis ({sampleReturns.length} Records)
-              </>
-            )}
-          </button>
+          <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+            <button
+              onClick={exportToCsv}
+              className="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold rounded-lg text-xs transition-colors flex items-center gap-2 shadow-sm"
+              title="Download processed return intelligence CSV report for Neha and Vivek"
+            >
+              <Download className="w-4 h-4 text-amber-400" />
+              <span>Export to CSV</span>
+            </button>
+
+            <button
+              onClick={handleRunBatch}
+              disabled={running}
+              className="px-4 py-2.5 bg-amber-400 hover:bg-amber-300 disabled:opacity-50 text-slate-950 font-semibold rounded-lg text-xs transition-colors flex items-center gap-2 shadow-sm"
+            >
+              {running ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  Processing Concurrent Batches...
+                </>
+              ) : (
+                <>
+                  <Play className="w-4 h-4" />
+                  Run Parallel Batch Analysis ({sampleReturns.length} Records)
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 

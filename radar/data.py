@@ -1,0 +1,152 @@
+"""Data loading and catalogue definitions for Dhaga & Co."""
+
+import os
+from typing import List, Dict, Any
+from .models import ReturnRecord
+
+SAMPLE_RETURNS: List[Dict[str, Any]] = [
+    {
+        "id": "RET-78901",
+        "order_id": "ORD-54120",
+        "order_date": "2026-09-18",
+        "delivered_date": "2026-09-21",
+        "return_date": "2026-09-22",
+        "sku": "KUR-JPR-402",
+        "product_name": "Gulabi Hand-block Printed Chanderi Kurti",
+        "vendor_id": "VEND-JPR-01",
+        "vendor_name": "Anokhi Weaves & Prints",
+        "category": "Womenswear",
+        "price": 899.0,
+        "size_ordered": "M",
+        "color_raw": "rani gulabi",
+        "official_return_reason": "Other",
+        "free_text_other_reason": "Size M mangwaya tha par bust area bohot tight hai, bilkul fit nahi baith raha. Aur kapda ek baar paani lagne pe pink color nikal raha hai.",
+        "customer_language": "Hinglish",
+        "cod": True,
+        "status": "Initiated",
+    },
+    {
+        "id": "RET-78902",
+        "order_id": "ORD-54189",
+        "order_date": "2026-09-19",
+        "delivered_date": "2026-09-22",
+        "return_date": "2026-09-23",
+        "sku": "TEE-TPR-108",
+        "product_name": "Supima Classic Crewneck Tee - Navy",
+        "vendor_id": "VEND-TPR-02",
+        "vendor_name": "Kongu Knits Tiruppur",
+        "category": "Mens Basics",
+        "price": 499.0,
+        "size_ordered": "L",
+        "color_raw": "gahra neela",
+        "official_return_reason": "Other",
+        "free_text_other_reason": "Collar ribbing ek wash me stretch ho gaya aur neck loose ho gaya. Quality expectation se bekaar hai.",
+        "customer_language": "Hinglish",
+        "cod": True,
+        "status": "Initiated",
+    },
+    {
+        "id": "RET-78903",
+        "order_id": "ORD-54210",
+        "order_date": "2026-09-19",
+        "delivered_date": "2026-09-23",
+        "return_date": "2026-09-23",
+        "sku": "KUR-JPR-402",
+        "product_name": "Gulabi Hand-block Printed Chanderi Kurti",
+        "vendor_id": "VEND-JPR-01",
+        "vendor_name": "Anokhi Weaves & Prints",
+        "category": "Womenswear",
+        "price": 899.0,
+        "size_ordered": "L",
+        "color_raw": "rani pink",
+        "official_return_reason": "Other",
+        "free_text_other_reason": "Bust seams are way too narrow for size L. Pattern armhole cuts into underarm when sitting.",
+        "customer_language": "English",
+        "cod": False,
+        "status": "Initiated",
+    },
+    {
+        "id": "RET-78904",
+        "order_id": "ORD-54302",
+        "order_date": "2026-09-20",
+        "delivered_date": "2026-09-24",
+        "return_date": "2026-09-24",
+        "sku": "DRE-JPR-204",
+        "product_name": "Haldi Floral Tiered Midi Dress",
+        "vendor_id": "VEND-JPR-03",
+        "vendor_name": "Marwar Craft Mills",
+        "category": "Womenswear",
+        "price": 1299.0,
+        "size_ordered": "S",
+        "color_raw": "peela haldi",
+        "official_return_reason": "Other",
+        "free_text_other_reason": "Kapda bohot patla hai, bina inner ke bilkul transparent hai. Listing me kahi nahi likha tha ki lining nahi hai.",
+        "customer_language": "Hinglish",
+        "cod": True,
+        "status": "Initiated",
+    },
+    {
+        "id": "RET-78905",
+        "order_id": "ORD-54350",
+        "order_date": "2026-09-20",
+        "delivered_date": "2026-09-24",
+        "return_date": "2026-09-25",
+        "sku": "TEE-TPR-108",
+        "product_name": "Supima Classic Crewneck Tee - Navy",
+        "vendor_id": "VEND-TPR-02",
+        "vendor_name": "Kongu Knits Tiruppur",
+        "category": "Mens Basics",
+        "price": 499.0,
+        "size_ordered": "M",
+        "color_raw": "navy",
+        "official_return_reason": "Other",
+        "free_text_other_reason": "Bhai neck ribbing wave ho gaya pehle hi wear me. Supima bolke cheap 20s single jersey use kiya lagta hai.",
+        "customer_language": "Hinglish",
+        "cod": True,
+        "status": "Initiated",
+    }
+]
+
+VENDORS: List[Dict[str, Any]] = [
+    {
+        "id": "VEND-JPR-01",
+        "name": "Anokhi Weaves & Prints",
+        "hub": "Jaipur",
+        "category": "Womenswear",
+        "lead_time_days": 18,
+        "active_skus": 42,
+        "return_rate": 38.4,
+        "top_defect": "Under-spec Bust & Armhole Grading (-1.5 in)",
+        "rating": 3.4,
+    },
+    {
+        "id": "VEND-TPR-02",
+        "name": "Kongu Knits Tiruppur",
+        "hub": "Tiruppur",
+        "category": "Mens Basics",
+        "lead_time_days": 12,
+        "active_skus": 28,
+        "return_rate": 19.8,
+        "top_defect": "Collar Ribbing Spandex Recovery Failure (<88%)",
+        "rating": 4.1,
+    },
+    {
+        "id": "VEND-JPR-03",
+        "name": "Marwar Craft Mills",
+        "hub": "Jaipur",
+        "category": "Womenswear",
+        "lead_time_days": 21,
+        "active_skus": 35,
+        "return_rate": 34.1,
+        "top_defect": "Chanderi Transparency / Missing Cambric Lining",
+        "rating": 3.6,
+    }
+]
+
+
+def load_sample_returns() -> List[ReturnRecord]:
+    return [ReturnRecord(**r) for r in SAMPLE_RETURNS]
+
+
+def load_vendors() -> List[Dict[str, Any]]:
+    return VENDORS

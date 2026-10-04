@@ -8,6 +8,7 @@ import { TabType, SystemHealth, ReturnRecord, Vendor, ValidationCase, SingleAnal
 import { fetchHealth, fetchDatasets, fetchMetrics } from './api';
 import { Navbar } from './components/Navbar';
 import { SecurityKeyModal } from './components/SecurityKeyModal';
+import { PitchGuideModal } from './components/PitchGuideModal';
 import { LiveRadarView } from './components/LiveRadarView';
 import { BatchPipelineView } from './components/BatchPipelineView';
 import { WeeklyFitBriefView } from './components/WeeklyFitBriefView';
@@ -38,6 +39,7 @@ export default function App() {
   const [metrics, setMetrics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [securityModalOpen, setSecurityModalOpen] = useState(false);
+  const [pitchModalOpen, setPitchModalOpen] = useState(false);
   const [recentResults, setRecentResults] = useState<SingleAnalysisResult[]>([]);
   const [initialBrief, setInitialBrief] = useState<WeeklyFitBrief | null>(null);
 
@@ -87,6 +89,7 @@ export default function App() {
         setActiveTab={setActiveTab}
         health={health}
         onOpenSecurityModal={() => setSecurityModalOpen(true)}
+        onOpenPitchModal={() => setPitchModalOpen(true)}
       />
 
       {/* Main Content Viewport */}
@@ -182,6 +185,13 @@ export default function App() {
         onClose={() => setSecurityModalOpen(false)}
         health={health}
         onRefreshHealth={handleRefreshHealth}
+      />
+
+      {/* Presentation Pitch Guide Modal */}
+      <PitchGuideModal
+        isOpen={pitchModalOpen}
+        onClose={() => setPitchModalOpen(false)}
+        onSelectTab={(tab) => setActiveTab(tab)}
       />
     </div>
   );

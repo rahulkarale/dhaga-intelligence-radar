@@ -1,12 +1,13 @@
 import React from 'react';
 import { TabType, SystemHealth } from '../types';
-import { ShieldCheck, ShieldAlert, Activity, FileText, BarChart3, Database, DollarSign, Terminal } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, Activity, FileText, BarChart3, Database, DollarSign, Terminal, Presentation } from 'lucide-react';
 
 interface NavbarProps {
   activeTab: TabType;
   setActiveTab: (tab: TabType) => void;
   health: SystemHealth | null;
   onOpenSecurityModal: () => void;
+  onOpenPitchModal: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -14,6 +15,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   setActiveTab,
   health,
   onOpenSecurityModal,
+  onOpenPitchModal,
 }) => {
   const isKeyConfigured = health?.openRouter.isConfigured;
   const errorCount = health?.logs.errors || 0;
@@ -140,6 +142,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="font-mono text-[11px]">Fallback Mode</span>
               </>
             )}
+          </button>
+
+          <button
+            onClick={onOpenPitchModal}
+            className="px-2.5 py-1.5 text-xs font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 rounded transition-colors whitespace-nowrap hidden sm:inline-flex items-center gap-1.5"
+            title="Open 20-minute Presentation Pitch Guide"
+          >
+            <Presentation className="w-3.5 h-3.5 text-amber-400" />
+            <span>Pitch Guide</span>
           </button>
 
           <button
